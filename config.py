@@ -38,8 +38,8 @@ def configure(advanced):
     # registry as appropriate.
     from supybot.questions import expect, anything, something, yn
     conf.registerPlugin('Youtube', True)
-    conf.registerGlobalValue(Vatsim, 'developer_key', registry.String('', "developer_key", private=True))
-    conf.registerGlobalValue(Vatsim, 'client_id', registry.String('', "client_id", private=True))
+    conf.registerGlobalValue(Youtube, 'developer_key', registry.String('', "developer_key", private=True))
+    conf.registerGlobalValue(Youtube, 'client_id', registry.String('', "client_id", private=True))
 
 
 Youtube = conf.registerPlugin('Youtube')
