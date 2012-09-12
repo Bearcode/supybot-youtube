@@ -94,7 +94,7 @@ class Youtube(callbacks.Plugin):
         except:
             views = ircutils.bold('0')
         try:  
-            rating = ircutils.bold('{:.2%}'.format((float(oldrating)/5)))
+            rating = ircutils.bold('{:.2%}'.format((float(entry.rating.average)/5)))
         except:
             rating = ircutils.bold("n/a")
 
