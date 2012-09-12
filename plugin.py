@@ -33,7 +33,6 @@ from supybot.commands import *
 import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
-import re
 import gdata.youtube
 import gdata.youtube.service
 from urlparse import *
@@ -44,7 +43,7 @@ class Youtube(callbacks.Plugin):
     threaded = True
 
     def __init__(self, irc):
-        elf.__parent = super(Youtube, self)
+        self.__parent = super(Youtube, self)
         self.__parent.__init__(irc)
         self.service = gdata.youtube.service.YouTubeService()
         self.service.developer_key = self.registryValue('developer_key')
