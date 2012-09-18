@@ -76,7 +76,10 @@ class Youtube(callbacks.Plugin):
         (recipients, text) = msg.args
         yt_service = self.service
         try:
-            url = text.split("http://")[1]
+            if "https" in text:
+                url = text.split("https://")[1]
+            else:
+                url = text.split("http://")[1]
             url = url.split(" ")[0]
         except:
             url = text
