@@ -38,7 +38,7 @@ def configure(advanced):
     # registry as appropriate.
     from supybot.questions import expect, anything, something, yn
     conf.registerPlugin('Youtube', True)
-   
+
 
 
 Youtube = conf.registerPlugin('Youtube')
@@ -46,6 +46,5 @@ Youtube = conf.registerPlugin('Youtube')
 # conf.registerGlobalValue(Youtube, 'someConfigVariableName',
 #     registry.Boolean(False, """Help for someConfigVariableName."""))
 conf.registerGlobalValue(Youtube, 'developer_key', registry.String('', "developer_key", private=True))
-conf.registerGlobalValue(Youtube, 'client_id', registry.String('', "client_id", private=True))
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

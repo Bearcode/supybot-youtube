@@ -1,4 +1,4 @@
-###
+# ##
 # Copyright (c) 2009, James Scott
 # All rights reserved.
 #
@@ -28,14 +28,11 @@
 
 ###
 
-import supybot.utils as utils
-from supybot.commands import *
-import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
-import gdata.youtube
-import gdata.youtube.service
+import apiclient
 from urlparse import *
+
 
 class Youtube(callbacks.Plugin):
     """Add the help for "@plugin help Youtube" here
@@ -43,13 +40,14 @@ class Youtube(callbacks.Plugin):
     threaded = True
 
     def __init__(self, irc):
+        super(Youtube, self).__init__(irc)
         self.__parent = super(Youtube, self)
         self.__parent.__init__(irc)
-        self.service = gdata.youtube.service.YouTubeService()
-        self.service.developer_key = self.registryValue('developer_key')
-        self.service.client_id = self.registryValue('client_id')
+        self.developer_key = self.registryValue('developer_key')
+        self.YOUTUBE_API_SERVICE_NAME = "youtube"
+        self.YOUTUBE_API_VERSION = "v3"
 
-    def _video_id(self,value):
+    def _video_id(self, value):
         """
         Examples:
         - http://youtu.be/SA2iWivDJiE
@@ -72,9 +70,10 @@ class Youtube(callbacks.Plugin):
         # fail?
         return None
 
-    def _lookUpYouTube(self, irc, msg):
+    def _lookup_youtube(self, irc, msg):
         (recipients, text) = msg.args
-        yt_service = self.service
+        yt_service = apiclient.discovery.build(self.YOUTUBE_API_SERVICE_NAME, self.YOUTUBE_API_VERSION,
+                                               developerKey=self.developer_key)
         try:
             if "https" in text:
                 url = text.split("https://")[1]
@@ -83,52 +82,61 @@ class Youtube(callbacks.Plugin):
             url = url.split(" ")[0]
         except:
             url = text
-        vid_id = self._video_id("http://"+url)
-        entry = yt_service.GetYouTubeVideoEntry(video_id=vid_id)
+        vid_id = self._video_id("http://" + url)
+        entry = yt_service.videos().list(
+            part="snippet, statistics",
+            id=vid_id
+        ).execute()
         title = ""
-        rating = ""
-        views = 0
         try:
-            title = ircutils.bold(entry.media.title.text)
+            title = ircutils.bold(entry['items'][0]['snippet']['title'])
         except:
             pass
         try:
-            views = ircutils.bold(entry.statistics.view_count)
+            views = ircutils.bold(entry['items'][0]['statistics']['viewCount'])
         except:
             views = ircutils.bold('0')
-        try:  
-            rating = ircutils.bold('{:.2%}'.format((float(entry.rating.average)/5)))
+        try:
+            like_dislike_ratio = float(entry['items'][0]['statistics']['likeCount']) / (
+                float(entry['items'][0]['statistics']['likeCount']) + float(
+                    entry['items'][0]['statistics']['dislikeCount']))
+            rating = ircutils.bold('{:.2%}'.format(like_dislike_ratio))
         except:
             rating = ircutils.bold("n/a")
 
-        irc.reply('Title: %s  Views: %s  Rating: %s  ' % (title, views, rating),prefixNick=False)
-    
-    
+        irc.reply('Title: %s  Views: %s  Rating: %s  ' % (title, views, rating), prefixNick=False)
+
     def doPrivmsg(self, irc, msg):
         (recipients, text) = msg.args
         #print text.find("youtube.com/watch?v=")
         if "youtube.com" in text:
-            self._lookUpYouTube(irc, msg)
+            self._lookup_youtube(irc, msg)
         elif "youtu.be" in text:
-            self._lookUpYouTube(irc, msg)
+            self._lookup_youtube(irc, msg)
         else:
             pass
-    
+
     def search(self, irc, msg, args):
-        (recipients, text) = msg.args
-        yt_service = self.service
-        query = gdata.youtube.service.YouTubeVideoQuery()
-        query.vq = text
-        query.orderby = 'relevance'
-        query.racy = 'include'
-        query.max_results = 5
-        feed = yt_service.YouTubeQuery(query)
-        for entry in feed.entry:
-            irc.reply(format('Video Title: %s  Url: %s', ircutils.bold(entry.media.title.text),ircutils.bold(entry.media.player.url)),notice='true',prefixNick='false',private ='true')
+        yt_service = apiclient.discovery.build(self.YOUTUBE_API_SERVICE_NAME, self.YOUTUBE_API_VERSION,
+                                               developerKey=self.developer_key)
 
+        search_response = yt_service.search().list(
+            q=args,
+            part="id,snippet",
+            maxResults=3
+        ).execute()
 
+        videos = []
+
+        for search_result in search_response.get("items", []):
+            if search_result["id"]["kind"] == "youtube#video":
+                videos.append("Title: %s  Url: https://www.youtube.com/watch?v=%s" %
+                              (ircutils.bold(search_result["snippet"]["title"]),
+                               search_result["id"]["videoId"]))
+
+        for item in videos:
+            irc.reply(format('%s' % item), notice='true', prefixNick='false', private='true')
 
 Class = Youtube
-
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

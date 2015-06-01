@@ -30,8 +30,17 @@
 
 from supybot.test import *
 
-class YoutubeTestCase(PluginTestCase):
+class YoutubeTestCase(ChannelPluginTestCase):
     plugins = ('Youtube',)
 
+    def setUp(self):
+        ChannelPluginTestCase.setUp(self)
+
+    def testYoutubeSnarf(self):
+        self.assertSnarfRegexp('https://www.youtube.com/watch?v=q6KmRlle4-s', r'Title: \x02Sylvan Esso | NPR MUSIC FRONT ROW\x02')
+
+    def testYoutubeSearch(self):
+        self.timeout = 6
+        self.assertNotError('youtube search Sylvan Esso NPR')
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:
