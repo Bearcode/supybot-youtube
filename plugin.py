@@ -119,21 +119,17 @@ class Youtube(callbacks.Plugin):
     def search(self, irc, msg, args):
         yt_service = apiclient.discovery.build(self.YOUTUBE_API_SERVICE_NAME, self.YOUTUBE_API_VERSION,
                                                developerKey=self.developer_key)
-
         search_response = yt_service.search().list(
             q=args,
             part="id,snippet",
             maxResults=3
         ).execute()
-
         videos = []
-
         for search_result in search_response.get("items", []):
             if search_result["id"]["kind"] == "youtube#video":
                 videos.append("Title: %s  Url: https://www.youtube.com/watch?v=%s" %
                               (ircutils.bold(search_result["snippet"]["title"]),
                                search_result["id"]["videoId"]))
-
         for item in videos:
             irc.reply(format('%s' % item), notice='true', prefixNick='false', private='true')
 
