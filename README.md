@@ -1,5 +1,4 @@
-This a developer key by going to the [Developers Console](https://console.developers.google.com/project) creating a
-project, enabling the "YouTube Data API", then going to "Credentials".
+This a developer key by going to the [Developers Console](https://console.developers.google.com/project) and following these steps:
 
 - Open the [Google Developers Console](https://console.developers.google.com/project)
 - Create a new project or select an existing one
