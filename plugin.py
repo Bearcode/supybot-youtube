@@ -31,7 +31,7 @@
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 import apiclient
-from urlparse import *
+from urllib.parse import *
 
 
 class Youtube(callbacks.Plugin):
